@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CM Media — Hệ thống AFF</title>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
+html,body{height:100%;overflow:hidden}
+#app{display:flex;height:100vh;background:#f4f6fc;width:100vw}
+.sb{width:175px;background:#fff;display:flex;flex-direction:column;border-right:.5px solid #e8eaf0;flex-shrink:0}
+.sb-brand{padding:14px 12px 10px;border-bottom:.5px solid #f0f0f0}
+.sb-brand-name{font-size:13px;font-weight:700;color:#1a1a2e}
+.sb-brand-sub{font-size:10px;color:#8a94a6;margin-top:1px}
+.sb-nav{flex:1;padding:6px 0}
+.sb-item{display:flex;align-items:center;gap:8px;padding:10px 12px;cursor:pointer;font-size:12px;color:#6b7280;border-left:3px solid transparent;transition:all .15s}
+.sb-item:hover{background:#f4f6fc;color:#7c3aed}
+.sb-item.active{background:linear-gradient(90deg,#f5f3ff,#ede9fe);color:#7c3aed;font-weight:600;border-left-color:#7c3aed;border-left-width:3px}
+.sb-footer{padding:10px 12px;border-top:.5px solid #f0f0f0}
+.sb-conn{display:flex;align-items:center;gap:5px;font-size:10px;color:#166634}
+.sb-conn-dot{width:7px;height:7px;border-radius:50%;background:#22c55e;flex-shrink:0}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.topbar{background:#fff;padding:9px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:.5px solid #f0f0f0;flex-shrink:0;box-shadow:0 1px 6px rgba(0,0,0,.05)}
+.topbar-left{display:flex;align-items:center;gap:8px}
+.topbar-title{font-size:14px;font-weight:600;color:#1a1a2e}
+.topbar-right{display:flex;align-items:center;gap:7px}
+.trial-tag{font-size:10px;background:#f0fdf4;color:#166634;padding:3px 8px;border-radius:20px;font-weight:500;border:.5px solid #bbf7d0}
+.notif{width:28px;height:28px;border-radius:7px;background:#f4f6fc;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#8a94a6;font-size:13px;border:none;position:relative}
+.ndot{width:6px;height:6px;border-radius:50%;background:#ef4444;position:absolute;top:4px;right:4px;border:1.5px solid #fff}
+.uchip{display:flex;align-items:center;gap:5px;background:#f4f6fc;padding:3px 8px 3px 3px;border-radius:20px;cursor:pointer}
+.ucav{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:500}
+.ucname{font-size:11px;color:#1a1a2e;font-weight:500}
+.page-wrap{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+
+/* Dashboard */
+.db-body{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+.db-sec{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;color:#4b5563;margin-bottom:8px}
+.db-sec::before{content:"";width:3px;height:13px;background:#7c3aed;border-radius:2px;flex-shrink:0}
+.stat-row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.scard{border-radius:14px;padding:15px 16px;color:#fff;position:relative;overflow:hidden;min-height:90px;transition:transform .15s,box-shadow .15s}
+.scard:hover{transform:translateY(-2px)}
+.scard::after{content:"";position:absolute;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.18);top:-22px;right:-22px}
+.scard::before{content:"";position:absolute;width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.1);bottom:-10px;right:14px}
+.sc-icon{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:14px;margin-bottom:9px;position:relative;z-index:1}
+.sc-val{font-size:26px;font-weight:800;line-height:1;margin-bottom:3px;position:relative;z-index:1}
+.sc-lbl{font-size:11px;opacity:.92;position:relative;z-index:1;font-weight:500}
+.sc1{background:linear-gradient(135deg,#8b5cf6,#6d28d9);box-shadow:0 6px 20px rgba(109,40,217,.45)}
+.sc2{background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 6px 20px rgba(22,163,74,.45)}
+.sc3{background:linear-gradient(135deg,#3b82f6,#1d4ed8);box-shadow:0 6px 20px rgba(29,78,216,.45)}
+.sc4{background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 6px 20px rgba(217,119,6,.45)}
+.sc5{background:linear-gradient(135deg,#f87171,#dc2626);box-shadow:0 6px 20px rgba(220,38,38,.45)}
+.sc6{background:linear-gradient(135deg,#fb923c,#ea580c);box-shadow:0 6px 20px rgba(234,88,12,.45)}
+.db-mid{display:grid;grid-template-columns:1fr 300px;gap:12px}
+.fb-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.fb-card{background:#fff;border-radius:12px;padding:14px;border:.5px solid #ede9fe;box-shadow:0 2px 8px rgba(0,0,0,.06);transition:transform .15s,box-shadow .15s}
+.fb-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,.15)}
+.fb-card-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.fb-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.fb-name{font-size:12px;font-weight:600;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fb-id{font-size:10px;color:#8a94a6}
+.fb-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.fbs-lbl{font-size:9px;color:#8a94a6}
+.fbs-val{font-size:13px;font-weight:600;color:#1a1a2e}
+.chart-card{background:#fff;border-radius:12px;padding:14px;border:.5px solid #ede9fe;box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;flex-direction:column;gap:10px}
+.chart-title{font-size:11px;font-weight:600;color:#1a1a2e}
+.donut-wrap{display:flex;align-items:center;justify-content:center;gap:14px}
+.leg{display:flex;flex-direction:column;gap:6px}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:#4b5563}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.bar-wrap{display:flex;flex-direction:column;gap:7px}
+.bar-row{display:flex;align-items:center;gap:7px}
+.bar-lbl{width:80px;color:#6b7280;font-size:10px;text-align:right;flex-shrink:0}
+.bar-bg{flex:1;background:#f3f4f6;border-radius:4px;height:7px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px}
+.bar-val{width:24px;font-weight:600;color:#1a1a2e;font-size:10px;flex-shrink:0}
+
+/* Trang Content layout */
+.tc-layout{flex:1;overflow:hidden;display:grid;grid-template-columns:252px 1fr;min-height:0}
+.tc-left{background:#fff;border-right:.5px solid #e8eaf0;overflow-y:auto;padding:12px}
+.sec-title{font-size:11px;font-weight:700;color:#7c3aed;display:flex;align-items:center;gap:5px;margin-bottom:10px}
+.sec-title::before{content:'';width:3px;height:13px;background:#7c3aed;border-radius:2px}
+.selwrap{position:relative}
+.selwrap::after{content:'▾';position:absolute;right:7px;top:50%;transform:translateY(-50%);font-size:9px;color:#8a94a6;pointer-events:none}
+.fsel{font-size:11px;padding:6px 20px 6px 8px;border-radius:6px;border:.5px solid #e5e7eb;background:#f9fafb;color:#1a1a2e;outline:none;appearance:none;cursor:pointer;width:100%;font-family:inherit}
+.fsel:focus{border-color:#7c3aed;background:#fff}
+.flbl{font-size:10px;font-weight:600;color:#6b7280;margin-bottom:2px;display:block}
+.fg{margin-bottom:7px}
+.finput{font-size:11px;padding:6px 8px;border-radius:6px;border:.5px solid #e5e7eb;background:#f9fafb;color:#1a1a2e;outline:none;width:100%;font-family:inherit}
+.finput:focus{border-color:#7c3aed;background:#fff}
+.fta{font-size:11px;padding:6px 8px;border-radius:6px;border:.5px solid #e5e7eb;background:#f9fafb;color:#1a1a2e;outline:none;width:100%;font-family:inherit;resize:vertical;min-height:48px}
+.fta:focus{border-color:#7c3aed;background:#fff}
+.div{height:.5px;background:#f0f0f0;margin:8px 0}
+.form-btns{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+
+/* Right */
+.tc-right{display:flex;flex-direction:column;overflow:hidden;background:#f4f6fc}
+.tc-top{background:#fff;border-bottom:.5px solid #e8eaf0;padding:9px 12px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;flex-shrink:0}
+.tc-acts{background:#fff;border-bottom:.5px solid #e8eaf0;padding:6px 12px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;flex-shrink:0}
+.tc-filters{background:#fff;border-bottom:.5px solid #e8eaf0;padding:6px 12px;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.tsearch{font-size:11px;padding:5px 9px;border-radius:6px;border:.5px solid #e5e7eb;background:#f9fafb;color:#1a1a2e;outline:none;width:160px}
+.tc-body{display:flex;flex:1;min-height:0;overflow:hidden}
+.tcard{flex:1;overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.twrap{overflow:auto;flex:1}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{padding:7px 9px;text-align:left;color:#8a94a6;font-size:10px;font-weight:600;border-bottom:.5px solid #f0f0f0;background:#fafafa;white-space:nowrap;position:sticky;top:0;z-index:1}
+td{padding:6px 9px;border-bottom:.5px solid #f9f9f9;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbff}
+tr.sel-row td{background:#f5f3ff!important}
+.urlcell{color:#7c3aed;font-size:10px}
+.tfooter{padding:5px 10px;border-top:.5px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;background:#fafafa;flex-shrink:0}
+.tfi{font-size:10px;color:#8a94a6}
+.pgn{display:flex;gap:3px}
+.pgbtn{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;border:.5px solid #e5e7eb;background:#fff;color:#4b5563}
+.pgbtn.active{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border-color:#7c3aed}
+
+/* Detail panel */
+.detail{width:210px;background:#fff;border-left:.5px solid #e8eaf0;overflow-y:auto;padding:12px;flex-shrink:0;display:flex;flex-direction:column}
+.detail-hint{flex:1;display:flex;align-items:center;justify-content:center;color:#b0b7c3;font-size:11px;text-align:center;line-height:1.7}
+
+/* Badge */
+.badge{display:inline-flex;align-items:center;gap:2px;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500}
+
+/* Buttons */
+.btn{font-size:11px;padding:5px 11px;border-radius:6px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:3px;font-weight:600;white-space:nowrap;font-family:inherit;transition:opacity .15s}
+.btn:hover{opacity:.87}
+.btn:active{transform:scale(.98)}
+.btn-scan{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-size:12px;padding:7px 14px}
+.btn-manual{background:#fff;color:#374151;border:.5px solid #d1d5db;font-size:12px;padding:7px 12px}
+.btn-save{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff}
+.btn-rl{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}
+.btn-del{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+.btn-w{background:#fff7ed;color:#c2410c;border:.5px solid #fed7aa}
+.btn-r{background:#fef2f2;color:#b91c1c;border:.5px solid #fecaca}
+.btn-g{background:#f0fdf4;color:#166534;border:.5px solid #bbf7d0}
+.btn-b{background:#eff6ff;color:#1d4ed8;border:.5px solid #bfdbfe}
+.chk-bar{background:#ede9fe;border-radius:5px;padding:3px 9px;font-size:10px;color:#6d28d9;font-weight:600;white-space:nowrap}
+
+/* Pricing */
+.pricing-body{flex:1;overflow-y:auto;padding:20px 24px;background:linear-gradient(160deg,#f8f7ff 0%,#f0f4ff 100%)}
+.pricing-header{text-align:center;margin-bottom:28px}
+.pricing-title{font-size:24px;font-weight:800;color:#1a1a2e;margin-bottom:6px}
+.pricing-sub{font-size:13px;color:#6b7280}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:920px;margin:0 auto 18px}
+.pricing-grid-bot{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:920px;margin:0 auto}
+.pcard{border-radius:18px;padding:22px 20px;text-align:center;position:relative;transition:transform .2s,box-shadow .2s;cursor:pointer;overflow:hidden}
+.pcard::before{content:"";position:absolute;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.12);top:-30px;right:-30px;pointer-events:none}
+.pcard:hover{transform:translateY(-4px)}
+.pcard.free{background:linear-gradient(145deg,#f8faff,#eef2ff);border:1.5px solid #c7d2fe;box-shadow:0 4px 16px rgba(99,102,241,.12)}
+.pcard.c15{background:linear-gradient(145deg,#fff7ed,#ffedd5);border:1.5px solid #fed7aa;box-shadow:0 4px 16px rgba(234,88,12,.15)}
+.pcard.c30{background:linear-gradient(145deg,#f5f3ff,#ede9fe);border:2px solid #7c3aed;box-shadow:0 8px 28px rgba(124,58,237,.3)}
+.pcard.c90{background:linear-gradient(145deg,#f0fdf4,#dcfce7);border:1.5px solid #86efac;box-shadow:0 4px 16px rgba(22,163,74,.15)}
+.pcard.c180{background:linear-gradient(145deg,#eff6ff,#dbeafe);border:1.5px solid #93c5fd;box-shadow:0 4px 16px rgba(37,99,235,.15)}
+.pcard.c365{background:linear-gradient(145deg,#1a1a2e,#312e81);border:1.5px solid #4f46e5;box-shadow:0 8px 28px rgba(49,46,129,.4)}
+.featured-badge{position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#f59e0b,#ef4444);color:#fff;font-size:10px;font-weight:800;padding:4px 14px;border-radius:0 0 12px 12px;white-space:nowrap;letter-spacing:.3px}
+.pcard-name{font-size:14px;font-weight:800;margin-bottom:3px}
+.pcard-days{font-size:11px;margin-bottom:14px;opacity:.7}
+.pcard-price{font-size:30px;font-weight:900;line-height:1;margin-bottom:2px}
+.pcard-price span{font-size:12px;font-weight:500;opacity:.7}
+.pcard-per{font-size:10px;opacity:.6;margin-bottom:4px}
+.pcard-free{font-size:28px;font-weight:900}
+.pcard-features{text-align:left;margin:14px 0 16px;display:flex;flex-direction:column;gap:7px}
+.pf{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:500}
+.pf-check{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;font-weight:800}
+.pcard-btn{width:100%;padding:10px;border-radius:10px;border:none;cursor:pointer;font-size:12px;font-weight:800;font-family:inherit;transition:all .15s;letter-spacing:.3px}
+.pcard-btn:hover{transform:scale(1.02);opacity:.92}
+.contact-banner{background:linear-gradient(135deg,#0f0f1a,#1e1b4b,#312e81);border-radius:16px;padding:22px 26px;max-width:920px;margin:18px auto 0;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;box-shadow:0 8px 28px rgba(49,46,129,.35)}
+.cb-left{color:#fff}
+.cb-title{font-size:15px;font-weight:800;margin-bottom:5px}
+.cb-sub{font-size:12px;color:#a5b4fc}
+.cb-right{display:flex;gap:10px;flex-wrap:wrap}
+.cb-btn{padding:10px 18px;border-radius:10px;border:none;cursor:pointer;font-size:12px;font-weight:700;font-family:inherit;display:flex;align-items:center;gap:6px;transition:all .15s;box-shadow:0 3px 10px rgba(0,0,0,.2)}
+.cb-btn:hover{transform:translateY(-2px);opacity:.92}
+.cb-fb{background:#1877f2;color:#fff}
+.cb-zalo{background:#0068ff;color:#fff}
+.cb-phone{background:#22c55e;color:#fff}
+
+/* Admin */
+.admin-body{flex:1;overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+.admin-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.astat{border-radius:11px;padding:13px 15px;color:#fff;position:relative;overflow:hidden}
+.astat::after{content:"";position:absolute;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.15);top:-14px;right:-14px}
+.astat-val{font-size:22px;font-weight:800;margin-bottom:2px;position:relative;z-index:1}
+.astat-lbl{font-size:10px;opacity:.9;position:relative;z-index:1}
+.user-table-card{background:#fff;border-radius:12px;border:.5px solid #f0f0f0;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.utop{padding:12px 14px;border-bottom:.5px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between}
+.utop-title{font-size:13px;font-weight:700;color:#1a1a2e}
+.user-search{font-size:11px;padding:6px 10px;border-radius:7px;border:.5px solid #e5e7eb;background:#f9fafb;outline:none;width:200px}
+.pkg-badge{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600}
+.pkg-free{background:#f3f4f6;color:#6b7280}
+.pkg-15{background:#fef9c3;color:#854d0e}
+.pkg-30{background:#dbeafe;color:#1e40af}
+.pkg-90{background:#d1fae5;color:#065f46}
+.pkg-180{background:#ede9fe;color:#6d28d9}
+.pkg-365{background:#fce7f3;color:#be185d}
+.status-active{background:#d1fae5;color:#065f46;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600}
+.status-trial{background:#fef9c3;color:#854d0e;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600}
+.status-expired{background:#fee2e2;color:#991b1b;font-size:10px;padding:2px 8px;border-radius:20px;font-weight:600}
+
+/* Settings */
+.set-body{flex:1;overflow-y:auto;padding:18px}
+.set-card{background:#fff;border-radius:11px;border:.5px solid #f0f0f0;padding:18px;max-width:500px;margin-bottom:12px}
+.set-title{font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:13px;display:flex;align-items:center;gap:6px}
+
+/* Scan dialog */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:200}
+.dialog{background:#fff;border-radius:14px;padding:20px;width:500px;max-height:85vh;overflow-y:auto}
+.dialog-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.dialog-title{font-size:14px;font-weight:700;color:#1a1a2e}
+.dialog-close{background:none;border:none;cursor:pointer;font-size:18px;color:#8a94a6;line-height:1}
+.prog-wrap{background:#f3f4f6;border-radius:5px;height:6px;overflow:hidden}
+.prog-bar{height:100%;border-radius:5px;background:linear-gradient(90deg,#7c3aed,#4f46e5);transition:width .3s}
+.url-list{max-height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;margin-top:8px}
+.url-item{font-size:10px;color:#7c3aed;background:#f5f3ff;padding:3px 7px;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>
+</head>
+<body>
+
+<div id="login-page" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,#1e1b4b,#312e81,#2e1065);align-items:center;justify-content:center;z-index:1000">
+  <div style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:40px 36px;width:340px;text-align:center;backdrop-filter:blur(12px)">
+    <div style="font-size:32px;margin-bottom:8px">⚡</div>
+    <div style="font-size:22px;font-weight:800;color:#fff;margin-bottom:4px">CM Media</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.5);margin-bottom:6px">Hệ thống AFF tự động</div>
+    <div style="display:inline-block;background:rgba(34,197,94,.15);color:#86efac;font-size:11px;padding:4px 14px;border-radius:20px;margin-bottom:24px;border:1px solid rgba(34,197,94,.25)">Dùng thử miễn phí 7 ngày</div>
+    <div id="google-btn" style="display:flex;justify-content:center;margin-bottom:16px"></div>
+    <div style="font-size:11px;color:rgba(255,255,255,.3)">Đăng nhập để tự động tạo sheet & workflow</div>
+  </div>
+</div>
+
+<div id="app">
+  <div class="sb">
+    <div class="sb-brand">
+      <div class="sb-brand-name">MC MEDIA</div>
+      <div class="sb-brand-sub">Sheet Manager</div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-item active" id="nav-dashboard" onclick="nav('dashboard')"><span>📊</span>Dashboard</div>
+      <div class="sb-item" id="nav-trang" onclick="nav('trang')"><span>📋</span>Trang_Content</div>
+      <div class="sb-item" id="nav-pricing" onclick="nav('pricing')"><span>💎</span>Bảng giá</div>
+      <div class="sb-item" id="nav-admin" onclick="nav('admin')"><span>👑</span>Admin</div>
+      <div class="sb-item" id="nav-settings" onclick="nav('settings')"><span>⚙️</span>Cài đặt</div>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-conn"><div class="sb-conn-dot"></div>Đã kết nối Google Sheets</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <span id="tb-ic">📊</span>
+        <span class="topbar-title" id="tb-title">Dashboard Tổng Quan</span>
+      </div>
+      <div class="topbar-right">
+        <div class="trial-tag">◷ Còn 7 ngày dùng thử</div>
+        <button class="notif">🔔<div class="ndot"></div></button>
+        <div class="uchip"><div class="ucav">NT</div><div class="ucname">namvc</div><span style="font-size:9px;color:#8a94a6">▾</span></div>
+      </div>
+    </div>
+    <div class="page-wrap" id="pw"></div>
+  </div>
+</div>
+
+<script>
+// ── Dữ liệu ───────────────────────────────────────────────────────────────────
+let pages=[];
+
+// Content: đúng cấu trúc sheet
+// tên trang | id | video cần tải | trạng thái | ai | thời gian đăng
+// lấy nội dung từ tiktok | nội dung muốn thêm | nội dung sẽ đăng
+// bình luận dưới video | link bài đăng | ghi chú | proxy
+let content=[];
+
+let checked=new Set(), filterSt="", filterPg="", search="";
+let selPage=-1, detailRow=null;
+let scanOpen=false, scanUrls=[], scanning=false, scanProg=0, si=null;
+let cur="dashboard";
+
+const ICONS=["#ede9fe|#6d28d9","#fce7f3|#be185d","#ccfbf1|#0f766e","#fef9c3|#854d0e","#dbeafe|#1e40af"];
+const SC={
+  "thành công":{bg:"#d1fae5",fg:"#065f46",ic:"✓"},
+  "đang đăng": {bg:"#dbeafe",fg:"#1e40af",ic:"↻"},
+  "đợi đăng":  {bg:"#fef9c3",fg:"#713f12",ic:"◷"},
+  "thất bại":  {bg:"#fee2e2",fg:"#991b1b",ic:"✕"},
+  "lỗi":       {bg:"#fee2e2",fg:"#991b1b",ic:"✕"},
+  "treo":      {bg:"#ffedd5",fg:"#9a3412",ic:"⚠"},
+};
+function badge(s){const c=SC[s]||SC["đợi đăng"];return`<span class="badge" style="background:${c.bg};color:${c.fg}">${c.ic} ${s}</span>`}
+
+function stats(){
+  const s={total:content.length,success:0,posting:0,pending:0,failed:0,stuck:0};
+  content.forEach(r=>{
+    if(r.status==="thành công")s.success++;
+    else if(r.status==="đang đăng")s.posting++;
+    else if(r.status==="đợi đăng")s.pending++;
+    else if(r.status==="thất bại"||r.status==="lỗi")s.failed++;
+    else if(r.status==="treo")s.stuck++;
+  });
+  return s;
+}
+
+function nav(p){
+  cur=p;
+  document.querySelectorAll(".sb-item").forEach(b=>b.classList.remove("active"));
+  document.getElementById("nav-"+p)?.classList.add("active");
+  const T={dashboard:["📊","Dashboard Tổng Quan"],trang:["📋","Trang_Content"],pricing:["💎","Bảng Giá & Gói Dịch Vụ"],admin:["👑","Quản Lý Admin"],settings:["⚙️","Cài đặt"]};
+  const[ic,t]=T[p];
+  document.getElementById("tb-ic").textContent=ic;
+  document.getElementById("tb-title").textContent=t;
+  render();
+}
+let cur2="dashboard";
+function render(){
+  cur2=cur;
+  const w=document.getElementById("pw");
+  if(cur==="dashboard")w.innerHTML=renderDB();
+  else if(cur==="trang")w.innerHTML=renderTrang();
+  else if(cur==="pricing")w.innerHTML=renderPricing();
+  else if(cur==="admin")w.innerHTML=renderAdmin();
+  else w.innerHTML=renderSet();
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+function renderDB(){
+  const s=stats();
+  const tot=s.total||1;
+  const C=Math.PI*2*38;
+  const segs=[[s.success,"#22c55e"],[s.pending,"#f59e0b"],[s.posting,"#3b82f6"],[s.failed,"#f87171"],[s.stuck,"#fb923c"]];
+  let off=0;
+  const arcs=segs.map(([v,c])=>{const len=(v/tot)*C;const a=`<circle cx="50" cy="50" r="38" fill="none" stroke="${c}" stroke-width="13" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" stroke-linecap="round"/>`;off+=len;return a;}).join("");
+  const pct=Math.round((s.success/tot)*100);
+  const scards=[
+    ["sc1","▶",s.total,"Tổng video"],
+    ["sc2","✓",s.success,"Thành công"],
+    ["sc3","↻",s.posting,"Đang đăng"],
+    ["sc4","◷",s.pending,"Đợi đăng"],
+    ["sc5","✕",s.failed,"Thất bại"],
+    ["sc6","⚠",s.stuck,"Treo"],
+  ];
+  const barData=[
+    ["Thành công","#16a34a",s.success],
+    ["Đợi đăng","#d97706",s.pending],
+    ["Đang đăng","#2563eb",s.posting],
+    ["Thất bại","#dc2626",s.failed],
+    ["Treo","#ea580c",s.stuck],
+  ];
+  return`<div class="db-body">
+  <div>
+    <div class="db-sec">Trạng thái Video</div>
+    <div class="stat-row">
+      ${scards.map(([cls,ic,v,l])=>`<div class="scard ${cls}"><div class="sc-icon">${ic}</div><div class="sc-val">${v}</div><div class="sc-lbl">${l}</div></div>`).join("")}
+    </div>
+  </div>
+  <div class="db-mid">
+    <div>
+      <div class="db-sec">Thống kê Trang Facebook</div>
+      <div class="fb-grid">
+        ${pages.map((p,i)=>{const[bg,fg]=ICONS[i%5].split("|");return`<div class="fb-card">
+          <div class="fb-card-hdr">
+            <div class="fb-icon" style="background:${bg};color:${fg}">f</div>
+            <div style="min-width:0"><div class="fb-name">${p.name}</div><div class="fb-id">ID: ${p.pid}</div></div>
+          </div>
+          <div class="fb-stats">
+            <div><div class="fbs-lbl">👥 Followers</div><div class="fbs-val">${p.followers.toLocaleString()}</div></div>
+            <div><div class="fbs-lbl">❤️ Fans</div><div class="fbs-val">${p.fans.toLocaleString()}</div></div>
+            <div><div class="fbs-lbl">📡 Reach</div><div class="fbs-val">${p.reach}</div></div>
+            <div><div class="fbs-lbl">📢 Impressions</div><div class="fbs-val">${p.impressions}</div></div>
+          </div>
+        </div>`}).join("")}
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="chart-card">
+        <div class="chart-title">◉ Phân bố trạng thái</div>
+        <div class="donut-wrap">
+          <svg width="96" height="96" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#f3f4f6" stroke-width="13"/>
+            ${arcs}
+            <text x="50" y="46" text-anchor="middle" font-size="16" font-weight="700" fill="#1a1a2e">${pct}%</text>
+            <text x="50" y="58" text-anchor="middle" font-size="8" fill="#8a94a6">thành công</text>
+          </svg>
+          <div class="leg">
+            ${[["#22c55e","Thành công",s.success],["#f59e0b","Đợi đăng",s.pending],["#3b82f6","Đang đăng",s.posting],["#f87171","Thất bại",s.failed],["#fb923c","Treo",s.stuck]].map(([c,l,v])=>`<div class="leg-item"><div class="leg-dot" style="background:${c}"></div>${l} (${v})</div>`).join("")}
+          </div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">📊 Video theo trang</div>
+        <div class="bar-wrap">
+          ${pages.map((p,i)=>{
+            const cnt=content.filter(r=>r.page===p.name).length;
+            const pct2=s.total>0?Math.round((cnt/s.total)*100):0;
+            const colors=["#7c3aed","#be185d","#0f766e","#854d0e","#1e40af"];
+            return`<div class="bar-row">
+              <div class="bar-lbl" title="${p.name}">${p.name.length>10?p.name.substring(0,10)+"...":p.name}</div>
+              <div class="bar-bg"><div class="bar-fill" style="width:${pct2}%;background:${colors[i%5]}"></div></div>
+              <div class="bar-val">${cnt}</div>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>`;
+}
+
+// ── Trang Content ─────────────────────────────────────────────────────────────
+function renderTrang(){
+  const filtered=content.filter(r=>{
+    if(filterSt&&r.status!==filterSt)return false;
+    if(filterPg&&r.page!==filterPg)return false;
+    if(search){const q=search.toLowerCase();if(!(r.url+r.page+r.status+r.noi_dung_them+r.ghi_chu).toLowerCase().includes(q))return false;}
+    return true;
+  });
+  const pd=selPage>=0?pages[selPage]:null;
+
+  return`<div class="tc-layout">
+  <!-- LEFT: Quản lý trang -->
+  <div class="tc-left">
+    <div class="sec-title">Quản Lý Trang Facebook</div>
+    <div class="fg selwrap" style="margin-bottom:8px">
+      <select class="fsel" onchange="selPageChange(this.value)">
+        <option value="-1">— Thêm trang mới —</option>
+        ${pages.map((p,i)=>`<option value="${i}" ${selPage===i?"selected":""}>${p.name}</option>`).join("")}
+      </select>
+    </div>
+    <div class="div"></div>
+    <div class="fg"><label class="flbl">Tên trang FB</label><input class="finput" data-key="name" placeholder="Tên trang Facebook" value="${pd?.name||""}"></div>
+    <div class="fg"><label class="flbl">Page ID</label><input class="finput" data-key="pid" placeholder="Page ID" value="${pd?.pid||""}"></div>
+    <div class="fg"><label class="flbl">Token</label><input class="finput" data-key="token" placeholder="Access Token" value="${pd?"••••••••":""}"></div>
+    <div class="fg"><label class="flbl">Proxy</label><input class="finput" data-key="proxy" placeholder="socks5://user:pass@host:port" value="${pd?.proxy||""}"></div>
+    <div class="fg"><label class="flbl">Kênh TikTok <span style="font-weight:400;color:#8a94a6">(mỗi kênh 1 dòng)</span></label>
+      <textarea class="fta" data-key="channels" placeholder="https://tiktok.com/@abc&#10;https://tiktok.com/@xyz">${pd?.channels||""}</textarea>
+    </div>
+    <div class="fg"><label class="flbl">Link chặn cuối <span style="font-weight:400;color:#8a94a6">(1 link/kênh)</span></label>
+      <textarea class="fta" data-key="stop_links" placeholder="Link chặn cuối, cùng thứ tự với kênh" style="min-height:40px">${pd?.stop_links||""}</textarea>
+    </div>
+    <div class="fg"><label class="flbl">Số clip/ngày</label>
+      <input class="finput" type="number" data-key="clips" value="${pd?.clips||5}" style="width:90px">
+    </div>
+    <div class="fg"><label class="flbl">Giờ chặn cuối</label>
+      <input class="finput" data-key="end_time" placeholder="VD: 22:00" value="${pd?.end_time||""}" style="width:100px">
+    </div>
+    <div class="form-btns">
+      <button class="btn btn-save" onclick="savePage()">💾 Lưu trang</button>
+      <button class="btn btn-rl" onclick="alert('Sắp ra mắt!')">↺ Reset lịch</button>
+      <button class="btn btn-del" onclick="deletePage()">🗑 Xóa</button>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="tc-right">
+    <div class="tc-top">
+      <div class="sec-title" style="margin:0">Sheet Content</div>
+      <button class="btn btn-scan" onclick="openScan()">🚀 Quét TikTok → Ghi vào Sheet</button>
+      <button class="btn btn-manual" onclick="alert('Sắp ra mắt!')">➕ Thêm thủ công</button>
+    </div>
+    <div class="tc-acts">
+      ${checked.size>0?`<span class="chk-bar">☑ ${checked.size} bài đang chọn</span>`:""}
+      <button class="btn btn-w" onclick="resetChecked()">↺ Reset đã chọn</button>
+      <button class="btn btn-r" onclick="deleteChecked()">🗑 Xóa đã chọn</button>
+      <button class="btn btn-r" onclick="delByStatus('thành công')">🗑 Xóa thành công</button>
+      <button class="btn btn-r" onclick="delByStatus('thất bại')">🗑 Xóa thất bại</button>
+      <button class="btn btn-w" onclick="rstByStatus('thất bại')">↺ Reset thất bại</button>
+      <button class="btn btn-w" onclick="rstByStatus('treo')">↺ Reset treo</button>
+      <button class="btn btn-g" onclick="alert('Chọn dòng → cài giờ')">⏰ Cài giờ loạt</button>
+    </div>
+    <div class="tc-filters">
+      <input class="tsearch" placeholder="Tìm kiếm..." value="${search}" oninput="search=this.value;render()">
+      <div class="selwrap" style="width:155px">
+        <select class="fsel" onchange="filterPg=this.value;render()">
+          <option value="">Tất cả trang</option>
+          ${pages.map(p=>`<option value="${p.name}" ${filterPg===p.name?"selected":""}>${p.name}</option>`).join("")}
+        </select>
+      </div>
+      <div class="selwrap" style="width:140px">
+        <select class="fsel" onchange="filterSt=this.value;render()">
+          <option value="">Tất cả trạng thái</option>
+          ${["đợi đăng","đang đăng","thành công","thất bại","treo","lỗi"].map(s=>`<option value="${s}" ${filterSt===s?"selected":""}>${s}</option>`).join("")}
+        </select>
+      </div>
+    </div>
+    <div class="tc-body">
+      <div class="tcard">
+        <div class="twrap">
+          <table>
+            <thead><tr>
+              <th style="width:24px"><input type="checkbox" style="accent-color:#7c3aed;cursor:pointer" ${checked.size===filtered.length&&filtered.length>0?"checked":""} onchange="toggleAll(this.checked,[${filtered.map(r=>r.idx)}])"></th>
+              <th style="width:105px">Thời gian đăng</th>
+              <th>Video cần tải</th>
+              <th style="width:32px">AI</th>
+              <th style="width:95px">Trạng thái</th>
+              <th style="width:90px">Nội dung thêm</th>
+              <th style="width:85px">Link bài đăng</th>
+              <th style="width:80px">Ghi chú</th>
+            </tr></thead>
+            <tbody>
+              ${filtered.length===0?`<tr><td colspan="8" style="text-align:center;padding:28px;color:#8a94a6">Không có dữ liệu</td></tr>`:""}
+              ${filtered.map(r=>`<tr onclick="selRow(${r.idx})" class="${checked.has(r.idx)?"sel-row":detailRow?.idx===r.idx?"sel-row":""}" style="cursor:pointer">
+                <td onclick="event.stopPropagation();toggleCheck(${r.idx})">
+                  <input type="checkbox" style="accent-color:#7c3aed;cursor:pointer" ${checked.has(r.idx)?"checked":""} onchange="toggleCheck(${r.idx})">
+                </td>
+                <td>${r.time}</td>
+                <td class="urlcell" title="${r.url}">${r.url.replace("https://www.tiktok.com/","")}</td>
+                <td>${r.ai}</td>
+                <td>${badge(r.status)}</td>
+                <td title="${r.noi_dung_them}">${r.noi_dung_them||"—"}</td>
+                <td>${r.link_dang?`<a href="${r.link_dang}" target="_blank" style="color:#7c3aed;font-size:10px">Xem bài</a>`:"—"}</td>
+                <td title="${r.ghi_chu}">${r.ghi_chu||"—"}</td>
+              </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+        <div class="tfooter">
+          <span class="tfi">✅ ${content.length} video · Hiển thị ${filtered.length}</span>
+          <div class="pgn">
+            <div class="pgbtn active">1</div>
+            <div class="pgbtn">2</div>
+            <div class="pgbtn">3</div>
+          </div>
+        </div>
+      </div>
+      <!-- Detail panel -->
+      <div class="detail" id="dp">
+        ${detailRow?renderDetail():`<div class="detail-hint">← Bấm vào dòng<br>để xem chi tiết</div>`}
+      </div>
+    </div>
+  </div>
+  </div>
+  ${scanOpen?renderScanDlg():""}`;
+}
+
+function renderDetail(){
+  const r=detailRow;
+  return`<div>
+    <div style="font-size:11px;font-weight:700;color:#1a1a2e;margin-bottom:10px">✏️ Chi tiết</div>
+    <div class="fg"><label class="flbl">Video URL</label><input class="finput" style="font-size:10px" value="${r.url}"></div>
+    <div class="fg"><label class="flbl">Thời gian đăng</label><input class="finput" value="${r.time}"></div>
+    <div class="fg"><label class="flbl">AI</label>
+      <div class="selwrap"><select class="fsel"><option ${r.ai==="có"?"selected":""}>có</option><option ${r.ai==="không"?"selected":""}>không</option></select></div>
+    </div>
+    <div class="fg"><label class="flbl">Trạng thái</label>
+      <div class="selwrap"><select class="fsel">
+        ${["đợi đăng","đang đăng","thành công","thất bại","lỗi"].map(s=>`<option ${r.status===s?"selected":""}>${s}</option>`).join("")}
+      </select></div>
+    </div>
+    <div class="fg"><label class="flbl">Nội dung muốn thêm</label><textarea class="fta" style="min-height:52px">${r.noi_dung_them}</textarea></div>
+    <div class="fg"><label class="flbl">Nội dung sẽ đăng</label><textarea class="fta" style="min-height:52px">${r.noi_dung_dang}</textarea></div>
+    <div class="fg"><label class="flbl">Bình luận dưới video</label><input class="finput" value="${r.binh_luan}"></div>
+    <div class="fg"><label class="flbl">Link bài đăng</label><input class="finput" value="${r.link_dang}"></div>
+    <div class="fg"><label class="flbl">Ghi chú</label><input class="finput" value="${r.ghi_chu}"></div>
+    <div style="display:flex;gap:5px;margin-top:10px">
+      <button class="btn btn-save" style="flex:1;justify-content:center" onclick="alert('Đã lưu!')">💾 Lưu</button>
+      <button class="btn btn-del" onclick="delRow(${r.idx})">🗑</button>
+    </div>
+  </div>`;
+}
+
+function renderScanDlg(){
+  return`<div class="overlay" onclick="closeScan()">
+  <div class="dialog" onclick="event.stopPropagation()">
+    <div class="dialog-hdr">
+      <div class="dialog-title">🚀 Quét TikTok → Ghi vào Sheet</div>
+      <button class="dialog-close" onclick="closeScan()">✕</button>
+    </div>
+    <div class="fg"><label class="flbl">Chọn trang Facebook</label>
+      <div class="selwrap"><select class="fsel">${pages.map(p=>`<option>${p.name}</option>`).join("")}</select></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="fg"><label class="flbl">Max video</label><input class="finput" type="number" value="50"></div>
+      <div class="fg"><label class="flbl">Cách nhau (phút)</label><input class="finput" type="number" value="30"></div>
+    </div>
+    <div class="fg"><label class="flbl">Giờ bắt đầu đăng</label><input class="finput" type="datetime-local"></div>
+    <div style="display:flex;gap:8px;margin:12px 0 10px">
+      <button class="btn btn-scan" onclick="startScan()">${scanning?"⏳ Đang quét...":"🔍 Bắt đầu quét"}</button>
+      ${scanUrls.length>0&&!scanning?`<button class="btn btn-g" style="font-size:12px;padding:7px 14px" onclick="addToSheet()">➕ Thêm ${scanUrls.length} video vào Sheet</button>`:""}
+    </div>
+    ${scanning||scanUrls.length>0?`
+    <div>
+      <div style="font-size:11px;color:#4b5563;font-weight:500;margin-bottom:6px">${scanning?`Đang quét... ${scanProg}%`:`✅ Tìm được ${scanUrls.length} video mới`}</div>
+      <div class="prog-wrap"><div class="prog-bar" style="width:${scanProg}%"></div></div>
+      <div class="url-list">${scanUrls.map(u=>`<div class="url-item">${u}</div>`).join("")}</div>
+    </div>`:""}
+  </div>
+  </div>`;
+}
+
+// ── Pricing ───────────────────────────────────────────────────────────────────
+function renderPricing(){
+  const plans=[
+    {name:"Dùng thử",days:7,price:0,free:true,features:["Không giới hạn trang FB","Không giới hạn video","Quét TikTok tự động","Hỗ trợ cơ bản"]},
+    {name:"Gói 15",days:15,price:79000,featured:false,features:["Không giới hạn trang FB","Không giới hạn video","Quét TikTok tự động","AI Agent","Hỗ trợ qua Zalo"]},
+    {name:"Gói 30",days:30,price:139000,featured:true,features:["Không giới hạn trang FB","Không giới hạn video","Quét TikTok tự động","AI Agent","Ưu tiên hỗ trợ 24/7"]},
+    {name:"Gói 90",days:90,price:359000,featured:false,features:["Không giới hạn trang FB","Không giới hạn video","Quét TikTok tự động","AI Agent","Ưu tiên hỗ trợ 24/7"]},
+    {name:"Gói 180",days:180,price:599000,featured:false,features:["Không giới hạn trang FB","Không giới hạn video","Quét TikTok tự động","AI Agent","Ưu tiên hỗ trợ 24/7"]},
+    {name:"Gói 365",days:365,price:999000,featured:false,features:["Không giới hạn trang FB","Không giới hạn video","Quét TikTok tự động","AI Agent","Ưu tiên hỗ trợ 24/7","Tặng 1 tháng khi gia hạn"]},
+  ];
+  function fmtPrice(p){return p.toLocaleString("vi-VN")+"đ";}
+  function perkDay(p,d){return p>0?"~"+Math.round(p/d).toLocaleString("vi-VN")+"đ/ngày":"";}
+  const top3=plans.slice(0,3);
+  const bot3=plans.slice(3,6);
+  const cardStyles={
+    "Dùng thử":{cls:"free",nameC:"#3730a3",priceC:"#22c55e",featC:"#4338ca",checkBg:"#c7d2fe",checkC:"#3730a3",btnBg:"linear-gradient(135deg,#6366f1,#4f46e5)",btnC:"#fff"},
+    "Gói 15":{cls:"c15",nameC:"#c2410c",priceC:"#ea580c",featC:"#9a3412",checkBg:"#fed7aa",checkC:"#c2410c",btnBg:"linear-gradient(135deg,#f97316,#ea580c)",btnC:"#fff"},
+    "Gói 30":{cls:"c30 featured",nameC:"#5b21b6",priceC:"#7c3aed",featC:"#4c1d95",checkBg:"#ddd6fe",checkC:"#6d28d9",btnBg:"linear-gradient(135deg,#8b5cf6,#6d28d9)",btnC:"#fff"},
+    "Gói 90":{cls:"c90",nameC:"#166534",priceC:"#16a34a",featC:"#14532d",checkBg:"#bbf7d0",checkC:"#166534",btnBg:"linear-gradient(135deg,#22c55e,#16a34a)",btnC:"#fff"},
+    "Gói 180":{cls:"c180",nameC:"#1e40af",priceC:"#2563eb",featC:"#1e3a8a",checkBg:"#bfdbfe",checkC:"#1d4ed8",btnBg:"linear-gradient(135deg,#3b82f6,#1d4ed8)",btnC:"#fff"},
+    "Gói 365":{cls:"c365",nameC:"#e0e7ff",priceC:"#a5b4fc",featC:"#c7d2fe",checkBg:"rgba(255,255,255,.2)",checkC:"#fff",btnBg:"linear-gradient(135deg,#f59e0b,#ef4444)",btnC:"#fff"},
+  };
+  function cardHTML(p){
+    const st=cardStyles[p.name]||cardStyles["Dùng thử"];
+    return`<div class="pcard ${st.cls}" onclick="showContact('${p.name}',${p.price})">
+      ${p.featured?'<div class="featured-badge">⭐ PHỔ BIẾN NHẤT</div>':""}
+      <div class="pcard-name" style="color:${st.nameC}">${p.name}</div>
+      <div class="pcard-days" style="color:${st.nameC}">${p.days} ngày sử dụng</div>
+      ${p.free
+        ?`<div class="pcard-free" style="color:${st.priceC}">Miễn phí</div><div style="font-size:10px;color:${st.nameC};opacity:.6;margin-bottom:4px">7 ngày dùng thử</div>`
+        :`<div class="pcard-price" style="color:${st.priceC}">${fmtPrice(p.price)}<span> /${p.days}n</span></div>
+         <div class="pcard-per" style="color:${st.priceC}">${perkDay(p.price,p.days)}</div>`
+      }
+      <div class="pcard-features">
+        ${p.features.map(f=>`<div class="pf" style="color:${st.featC}"><div class="pf-check" style="background:${st.checkBg};color:${st.checkC}">✓</div>${f}</div>`).join("")}
+      </div>
+      <button class="pcard-btn" style="background:${st.btnBg};color:${st.btnC}" onclick="event.stopPropagation();showContact('${p.name}',${p.price})">
+        ${p.free?"🚀 Bắt đầu miễn phí":"💎 Đăng ký ngay"}
+      </button>
+    </div>`;
+  }
+  return`<div class="pricing-body">
+    <div class="pricing-header">
+      <div class="pricing-title">💎 Bảng Giá Dịch Vụ</div>
+      <div class="pricing-sub">Không giới hạn trang FB · Không giới hạn video · Tự động 24/7</div>
+    </div>
+    <div class="pricing-grid">${top3.map(cardHTML).join("")}</div>
+    <div class="pricing-grid-bot">${bot3.map(cardHTML).join("")}</div>
+    <div class="contact-banner">
+      <div class="cb-left">
+        <div class="cb-title">📞 Liên hệ để đăng ký & được tư vấn miễn phí</div>
+        <div class="cb-sub">Hỗ trợ setup n8n workflow · Hướng dẫn sử dụng · Giải đáp thắc mắc</div>
+      </div>
+      <div class="cb-right">
+        <a href="https://www.facebook.com/nguyen.duy.nam.997113" target="_blank" style="text-decoration:none">
+          <button class="cb-btn cb-fb">📘 Facebook</button>
+        </a>
+        <a href="tel:0888942567" style="text-decoration:none">
+          <button class="cb-btn cb-phone">📞 0888 942 567</button>
+        </a>
+        <a href="https://zalo.me/0888942567" target="_blank" style="text-decoration:none">
+          <button class="cb-btn cb-zalo">💬 Zalo</button>
+        </a>
+      </div>
+    </div>
+  </div>`;
+}
+
+function showContact(planName, price){
+  const p=price>0?price.toLocaleString("vi-VN")+"đ":"Miễn phí";
+  alert(`💎 ${planName} — ${p}\n\nVui lòng liên hệ admin để đăng ký:\n📘 Facebook: fb.com/nguyen.duy.nam.997113\n📞 Điện thoại / Zalo: 0888 942 567`);
+}
+
+// ── Admin ──────────────────────────────────────────────────────────────────────
+const ADMIN_USERS=[];
+
+const PKG_CLS={"Dùng thử":"pkg-free","Gói 15":"pkg-15","Gói 30":"pkg-30","Gói 90":"pkg-90","Gói 180":"pkg-180","Gói 365":"pkg-365"};
+const STATUS_LBL={active:`<span class="status-active">✓ Active</span>`,trial:`<span class="status-trial">◷ Dùng thử</span>`,expired:`<span class="status-expired">✕ Hết hạn</span>`};
+
+function renderAdmin(){
+  const total=ADMIN_USERS.length;
+  const active=ADMIN_USERS.filter(u=>u.status==="active").length;
+  const trial=ADMIN_USERS.filter(u=>u.status==="trial").length;
+  const expired=ADMIN_USERS.filter(u=>u.status==="expired").length;
+  return`<div class="admin-body">
+    <div class="admin-stats">
+      <div class="astat" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)"><div class="astat-val">${total}</div><div class="astat-lbl">Tổng khách hàng</div></div>
+      <div class="astat" style="background:linear-gradient(135deg,#22c55e,#16a34a)"><div class="astat-val">${active}</div><div class="astat-lbl">Đang active</div></div>
+      <div class="astat" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><div class="astat-val">${trial}</div><div class="astat-lbl">Đang dùng thử</div></div>
+      <div class="astat" style="background:linear-gradient(135deg,#f87171,#dc2626)"><div class="astat-val">${expired}</div><div class="astat-lbl">Hết hạn</div></div>
+    </div>
+    <div class="user-table-card">
+      <div class="utop">
+        <div class="utop-title">👥 Danh sách khách hàng</div>
+        <input class="user-search" placeholder="Tìm kiếm email, tên...">
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="background:#fafafa">
+              <th style="padding:8px 12px;text-align:left;color:#8a94a6;font-size:10px;font-weight:600;border-bottom:.5px solid #f0f0f0;white-space:nowrap">Khách hàng</th>
+              <th style="padding:8px 12px;text-align:left;color:#8a94a6;font-size:10px;font-weight:600;border-bottom:.5px solid #f0f0f0;white-space:nowrap">Gói dùng</th>
+              <th style="padding:8px 12px;text-align:left;color:#8a94a6;font-size:10px;font-weight:600;border-bottom:.5px solid #f0f0f0;white-space:nowrap">Trạng thái</th>
+              <th style="padding:8px 12px;text-align:left;color:#8a94a6;font-size:10px;font-weight:600;border-bottom:.5px solid #f0f0f0;white-space:nowrap">Còn lại</th>
+              <th style="padding:8px 12px;text-align:left;color:#8a94a6;font-size:10px;font-weight:600;border-bottom:.5px solid #f0f0f0;white-space:nowrap">Ngày đăng ký</th>
+              <th style="padding:8px 12px;text-align:left;color:#8a94a6;font-size:10px;font-weight:600;border-bottom:.5px solid #f0f0f0;white-space:nowrap">Sheet / WF</th>
+              <th style="padding:8px 12px;text-align:left;color:#8a94a6;font-size:10px;font-weight:600;border-bottom:.5px solid #f0f0f0;white-space:nowrap">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${ADMIN_USERS.map((u,i)=>`<tr style="background:${i%2===0?"#fff":"#fafafa"}">
+              <td style="padding:9px 12px;border-bottom:.5px solid #f9f9f9">
+                <div style="font-weight:600;color:#1a1a2e">${u.name}</div>
+                <div style="font-size:10px;color:#8a94a6">${u.email}</div>
+              </td>
+              <td style="padding:9px 12px;border-bottom:.5px solid #f9f9f9">
+                <span class="pkg-badge ${PKG_CLS[u.plan]||"pkg-free"}">${u.plan}</span>
+              </td>
+              <td style="padding:9px 12px;border-bottom:.5px solid #f9f9f9">${STATUS_LBL[u.status]}</td>
+              <td style="padding:9px 12px;border-bottom:.5px solid #f9f9f9;font-weight:600;color:${u.days_left<=3?"#dc2626":u.days_left<=7?"#d97706":"#16a34a"}">${u.days_left} ngày</td>
+              <td style="padding:9px 12px;border-bottom:.5px solid #f9f9f9;color:#6b7280">${u.reg_date}</td>
+              <td style="padding:9px 12px;border-bottom:.5px solid #f9f9f9">
+                <div style="font-size:10px;color:#7c3aed;cursor:pointer" onclick="alert('Sheet: ${u.sheet}')">📊 ${u.sheet}</div>
+                <div style="font-size:10px;color:#6b7280;margin-top:2px">${u.wf}</div>
+              </td>
+              <td style="padding:9px 12px;border-bottom:.5px solid #f9f9f9">
+                <div style="display:flex;gap:4px">
+                  <button onclick="alert('Gia hạn cho ${u.name}')" style="font-size:10px;padding:3px 8px;border-radius:5px;border:none;background:#ede9fe;color:#6d28d9;cursor:pointer;font-weight:600">↺ Gia hạn</button>
+                  <button onclick="alert('Khóa tài khoản ${u.name}?')" style="font-size:10px;padding:3px 8px;border-radius:5px;border:none;background:#fee2e2;color:#991b1b;cursor:pointer;font-weight:600">🔒 Khóa</button>
+                </div>
+              </td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── Settings ──────────────────────────────────────────────────────────────────
+function renderSet(){
+  return`<div class="set-body">
+  <div class="set-card">
+    <div class="set-title">⚙️ Kết nối Google Sheets</div>
+    <div class="fg"><label class="flbl">Service Account JSON</label>
+      <div style="display:flex;gap:6px"><input class="finput" placeholder="Đường dẫn file credentials.json">
+      <button class="btn btn-b">📂 Chọn</button></div>
+    </div>
+    <div class="fg"><label class="flbl">Spreadsheet ID</label>
+      <input class="finput" placeholder="ID của Google Sheet (lấy từ URL)">
+    </div>
+    <button class="btn btn-save" style="margin-top:8px">💾 Lưu & Kết nối</button>
+    <div style="margin-top:12px;display:flex;align-items:center;gap:7px;font-size:12px;color:#166634;background:#f0fdf4;padding:10px 13px;border-radius:8px;border:.5px solid #bbf7d0">
+      ✅ Đã kết nối thành công
+    </div>
+  </div>
+  <div class="set-card">
+    <div class="set-title">📋 Hướng dẫn</div>
+    <div style="font-size:12px;color:#4b5563;line-height:1.9">
+      1. Vào <strong>Google Cloud Console</strong><br>
+      2. Bật Google Sheets API + Google Drive API<br>
+      3. Tạo <strong>Service Account</strong> → tải file JSON<br>
+      4. Chia sẻ Sheet với email Service Account (Editor)<br>
+      5. Copy <strong>Spreadsheet ID</strong> từ URL Sheet
+    </div>
+  </div>
+  </div>`;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+function selPageChange(v){selPage=parseInt(v);detailRow=null;render();}
+function selRow(idx){detailRow=content.find(r=>r.idx===idx)||null;render();}
+function delRow(idx){content=content.filter(r=>r.idx!==idx);detailRow=null;render();}
+function toggleCheck(idx){checked.has(idx)?checked.delete(idx):checked.add(idx);render();}
+function toggleAll(v,idxs){if(v)idxs.forEach(i=>checked.add(i));else checked.clear();render();}
+function resetChecked(){content=content.map(r=>checked.has(r.idx)?{...r,status:"đợi đăng"}:r);checked.clear();render();}
+function rstByStatus(s){content=content.map(r=>r.status===s?{...r,status:"đợi đăng"}:r);render();}
+function deleteChecked(){if(!confirm("Xóa "+checked.size+" dòng?"))return;content=content.filter(r=>!checked.has(r.idx));checked.clear();render();}
+function delByStatus(s){const n=content.filter(r=>r.status===s).length;if(!n){alert("Không có dòng '"+s+"'");return;}if(!confirm("Xóa "+n+" dòng '"+s+"'?"))return;content=content.filter(r=>r.status!==s);render();}
+function savePage(){
+  const name=document.querySelector('[data-key="name"]')?.value?.trim()||"";
+  const pid=document.querySelector('[data-key="pid"]')?.value?.trim()||"";
+  const proxy=document.querySelector('[data-key="proxy"]')?.value?.trim()||"";
+  const channels=document.querySelector('[data-key="channels"]')?.value?.trim()||"";
+  const stop_links=document.querySelector('[data-key="stop_links"]')?.value?.trim()||"";
+  const clips=parseInt(document.querySelector('[data-key="clips"]')?.value)||5;
+  const end_time=document.querySelector('[data-key="end_time"]')?.value?.trim()||"";
+  if(!name){alert("Nhập tên trang");return;}
+  if(selPage>=0){pages[selPage]={...pages[selPage],name,pid,proxy,channels,stop_links,clips,end_time};}
+  else{pages.push({id:Date.now(),name,pid,token:"",proxy,channels,stop_links,clips,end_time,followers:0,fans:0,reach:0,impressions:0});selPage=pages.length-1;}
+  render();
+}
+function deletePage(){
+  if(selPage<0)return;
+  if(!confirm("Xóa trang '"+pages[selPage]?.name+"'?"))return;
+  pages.splice(selPage,1);selPage=-1;render();
+}
+function openScan(){scanOpen=true;render();}
+function closeScan(){scanOpen=false;scanning=false;scanUrls=[];scanProg=0;if(si)clearInterval(si);render();}
+function startScan(){
+  if(scanning)return;
+  scanning=true;scanProg=0;scanUrls=[];render();
+  si=setInterval(()=>{
+    scanProg=Math.min(scanProg+10,100);
+    scanUrls.push("https://www.tiktok.com/@channel/video/"+Date.now());
+    render();
+    if(scanProg>=100){clearInterval(si);scanning=false;render();}
+  },200);
+}
+function addToSheet(){
+  const nr=scanUrls.map((url,i)=>({
+    idx:Date.now()+i,page:pages[0]?.name||"",pid:pages[0]?.pid||"",
+    url,status:"đợi đăng",ai:"có",time:"14/05/2025 08:00:00",
+    noi_dung_tt:"",noi_dung_them:"",noi_dung_dang:"",
+    binh_luan:"",link_dang:"",ghi_chu:"",proxy:pages[0]?.proxy||""
+  }));
+  content=[...content,...nr];
+  closeScan();
+  setTimeout(()=>alert("✅ Đã thêm "+nr.length+" video vào sheet!"),100);
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// CONFIG — Thay đổi sau khi deploy
+// ═══════════════════════════════════════════════════════════════
+const API_URL = localStorage.getItem('api_url') || '';
+const GOOGLE_CLIENT_ID = localStorage.getItem('google_client_id') || '';
+
+// ═══════════════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════════════
+let currentUser = null;
+
+function getToken(){ return localStorage.getItem('cm_token')||''; }
+function setToken(t){ localStorage.setItem('cm_token',t); }
+function clearToken(){ localStorage.removeItem('cm_token'); currentUser=null; }
+
+async function apiCall(path, method='GET', body=null){
+  const headers = {'Content-Type':'application/json'};
+  const token = getToken();
+  if(token) headers['Authorization'] = 'Bearer '+token;
+  const opts = {method, headers};
+  if(body) opts.body = JSON.stringify(body);
+  const res = await fetch(API_URL+path, opts);
+  if(res.status===401){clearToken();showLogin();return null;}
+  return await res.json();
+}
+
+async function initApp(){
+  const token = getToken();
+  if(!token){ showLogin(); return; }
+  const user = await apiCall('/auth/me');
+  if(!user){ showLogin(); return; }
+  currentUser = user;
+  updateUserUI();
+  await loadAllData();
+  render();
+}
+
+function updateUserUI(){
+  if(!currentUser) return;
+  const name = currentUser.name||currentUser.email||'User';
+  const initials = name.split(' ').map(w=>w[0]).slice(-2).join('').toUpperCase();
+  document.querySelectorAll('.ucav').forEach(el=>el.textContent=initials);
+  document.querySelectorAll('.ucname').forEach(el=>el.textContent=name.split(' ').pop());
+  // Trial tag
+  const days = currentUser.trial_days_left??7;
+  document.querySelectorAll('.trial-tag').forEach(el=>el.textContent='◷ Còn '+days+' ngày dùng thử');
+}
+
+function showLogin(){
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-page').style.display='flex';
+  // Init Google Sign In
+  if(window.google && GOOGLE_CLIENT_ID){
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleGoogleLogin,
+      auto_select: false,
+    });
+    google.accounts.id.renderButton(
+      document.getElementById('google-btn'),
+      {theme:'outline', size:'large', width:280, text:'continue_with', locale:'vi'}
+    );
+  }
+}
+
+async function handleGoogleLogin(response){
+  // Exchange Google credential for our JWT
+  const redirectUri = window.location.origin;
+  // For Google One Tap, we get credential directly
+  const res = await fetch(API_URL+'/auth/google-onetap', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({credential: response.credential})
+  });
+  const data = await res.json();
+  if(data.token){
+    setToken(data.token);
+    currentUser = data.user;
+    document.getElementById('login-page').style.display='none';
+    document.getElementById('app').style.display='flex';
+    updateUserUI();
+    await loadAllData();
+    render();
+  } else {
+    alert('Đăng nhập thất bại: '+(data.detail||'Lỗi không xác định'));
+  }
+}
+
+function logout(){
+  if(!confirm('Đăng xuất?')) return;
+  clearToken();
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-page').style.display='flex';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// LOAD DATA FROM API
+// ═══════════════════════════════════════════════════════════════
+async function loadAllData(){
+  await Promise.all([loadPagesFromAPI(), loadContentFromAPI()]);
+}
+
+async function loadPagesFromAPI(){
+  const r = await apiCall('/pages');
+  if(!r) return;
+  pages = r.map((p,i)=>({
+    id:i+1, _row:p._row||p.id,
+    name:p['Tên trang']||p.name||'',
+    pid:p['ID']||p.pid||'',
+    token:p['Token']||p.token||'',
+    proxy:p['Proxy']||p.proxy||'',
+    channels:p['Kênh TikTok']||p.channels||'',
+    stop_links:p['Link chặn cuối']||p.stop_links||'',
+    clips:parseInt(p['Số clip/ngày']||p.clips)||5,
+    end_time:p['Giờ chặn cuối']||p.end_time||'',
+    followers:0,fans:0,reach:0,impressions:0
+  }));
+}
+
+async function loadContentFromAPI(opts={}){
+  const params = new URLSearchParams(opts).toString();
+  const r = await apiCall('/content'+(params?'?'+params:''));
+  if(!r) return;
+  content = (r.rows||[]).map(row=>({
+    idx:row._row, _row:row._row,
+    page:row.page||'', pid:row.pid||'',
+    url:row.url||'', status:row.status||'',
+    ai:row.ai||'', time:row.time||'',
+    noi_dung_them:row.noi_dung_them||'',
+    noi_dung_dang:row.noi_dung_dang||'',
+    binh_luan:row.binh_luan||'',
+    link_dang:row.link_dang||'',
+    ghi_chu:row.ghi_chu||'', proxy:row.proxy||''
+  }));
+}
+
+// Override actions
+async function savePage(){
+  const name=document.querySelector('[data-key="name"]')?.value?.trim()||'';
+  const pid=document.querySelector('[data-key="pid"]')?.value?.trim()||'';
+  const token=document.querySelector('[data-key="token"]')?.value?.trim()||'';
+  const proxy=document.querySelector('[data-key="proxy"]')?.value?.trim()||'';
+  const channels=document.querySelector('[data-key="channels"]')?.value?.trim()||'';
+  const stop_links=document.querySelector('[data-key="stop_links"]')?.value?.trim()||'';
+  const clips=parseInt(document.querySelector('[data-key="clips"]')?.value)||5;
+  const end_time=document.querySelector('[data-key="end_time"]')?.value?.trim()||'';
+  if(!name){alert('Nhập tên trang');return;}
+  const pd=selPage>=0?pages[selPage]:null;
+  let r;
+  if(pd?._row){
+    r=await apiCall('/pages/'+pd._row,'PUT',{name,pid,token,proxy,channels,stop_links,clips,end_time});
+  } else {
+    r=await apiCall('/pages','POST',{name,pid,token,proxy,channels,stop_links,clips,end_time});
+  }
+  if(r?.ok){await loadPagesFromAPI();render();alert('✅ Đã lưu!');}
+}
+
+async function deletePage(){
+  if(selPage<0)return;
+  if(!confirm('Xóa trang "'+pages[selPage]?.name+'"?'))return;
+  const r=await apiCall('/pages/'+pages[selPage]._row,'DELETE');
+  if(r?.ok){pages.splice(selPage,1);selPage=-1;render();}
+}
+
+async function deleteChecked(){
+  if(!checked.size)return;
+  if(!confirm('Xóa '+checked.size+' dòng?'))return;
+  const r=await apiCall('/content','DELETE',{rows:[...checked]});
+  if(r?.ok){await loadContentFromAPI();checked.clear();render();}
+}
+
+async function delByStatus(s){
+  const rows=content.filter(r=>r.status===s).map(r=>r._row);
+  if(!rows.length){alert('Không có dòng "'+s+'"');return;}
+  if(!confirm('Xóa '+rows.length+' dòng "'+s+'"?'))return;
+  await apiCall('/content','DELETE',{rows});
+  await loadContentFromAPI();render();
+}
+
+async function rstByStatus(s){
+  const rows=content.filter(r=>r.status===s).map(r=>r._row);
+  if(!rows.length){alert('Không có dòng "'+s+'"');return;}
+  await apiCall('/content/reset','POST',{rows,new_status:'đợi đăng'});
+  await loadContentFromAPI();render();
+}
+
+async function resetChecked(){
+  if(!checked.size)return;
+  await apiCall('/content/reset','POST',{rows:[...checked],new_status:'đợi đăng'});
+  await loadContentFromAPI();checked.clear();render();
+}
+
+async function addToSheet(){
+  const nr=scanUrls.map(url=>({
+    'tên trang':pages[0]?.name||'',
+    'ID':pages[0]?.pid||'',
+    'Video cần tải':url,
+    'Trạng thái':'đợi đăng',
+    'AI Agent':'có',
+    'Thời gian đăng':'','Nội dung lấy từ tiktok':'',
+    'Nội dung muốn thêm':'','Nội Dung Sẽ Đăng':'',
+    'Bình luận Dưới video':'','Link bài đăng':'',
+    'ghi chú':'','Proxy':pages[0]?.proxy||''
+  }));
+  const r=await apiCall('/content','POST',{rows:nr});
+  if(r?.ok){
+    scanUrls=[];scanProg=0;scanning=false;
+    await loadContentFromAPI();
+    alert('✅ Đã thêm '+nr.length+' video!');
+    nav('trang');
+  }
+}
+
+function renderSet(){
+  const api=localStorage.getItem('api_url')||'';
+  const gid=localStorage.getItem('google_client_id')||'';
+  return`<div class="set-body">
+  <div class="set-card">
+    <div class="set-title">👤 Tài khoản</div>
+    ${currentUser?`
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f5f3ff;border-radius:10px;margin-bottom:12px">
+      ${currentUser.picture?`<img src="${currentUser.picture}" style="width:40px;height:40px;border-radius:50%">`:
+        `<div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700">${(currentUser.name||'U')[0]}</div>`}
+      <div>
+        <div style="font-weight:700;color:#1a1a2e">${currentUser.name||''}</div>
+        <div style="font-size:11px;color:#6b7280">${currentUser.email||''}</div>
+        <div style="font-size:10px;color:#7c3aed;margin-top:2px">Gói: ${currentUser.plan||'trial'} · Còn ${currentUser.trial_days_left??7} ngày</div>
+      </div>
+    </div>
+    <button class="btn btn-r" onclick="logout()">🚪 Đăng xuất</button>
+    `:'<div style="color:#6b7280;font-size:12px">Chưa đăng nhập</div>'}
+  </div>
+  <div class="set-card">
+    <div class="set-title">⚙️ Cấu hình hệ thống</div>
+    <div class="fg">
+      <label class="flbl">API URL <span style="font-weight:400;color:#9ca3af">(URL backend sau khi deploy)</span></label>
+      <input id="inp-api-url" class="finput" placeholder="https://cm-media-api.onrender.com" value="${api}">
+    </div>
+    <div class="fg">
+      <label class="flbl">Google Client ID</label>
+      <input id="inp-google-id" class="finput" placeholder="xxxx.apps.googleusercontent.com" value="${gid}">
+    </div>
+    <button class="btn btn-save" onclick="saveConfig()" style="margin-top:6px">💾 Lưu cấu hình</button>
+  </div>
+  <div class="set-card">
+    <div class="set-title">📋 Hướng dẫn deploy</div>
+    <div style="font-size:12px;color:#4b5563;line-height:2">
+      1. Upload code lên <strong>GitHub</strong><br>
+      2. Vào <strong>Render.com</strong> → Connect GitHub → Deploy<br>
+      3. Thêm các biến môi trường (API keys)<br>
+      4. Copy URL backend → paste vào ô API URL bên trên<br>
+      5. Reload trang → đăng nhập Gmail → dùng ngay!
+    </div>
+  </div>
+  </div>`;
+}
+
+function saveConfig(){
+  const api=document.getElementById('inp-api-url').value.trim();
+  const gid=document.getElementById('inp-google-id').value.trim();
+  if(api) localStorage.setItem('api_url',api);
+  if(gid) localStorage.setItem('google_client_id',gid);
+  alert('✅ Đã lưu! Reload trang để áp dụng.');
+}
+
+initApp();
+</script>
+</body>
+</html>
