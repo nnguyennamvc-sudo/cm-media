@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Optional, List
 import os, json, httpx
@@ -16,17 +15,16 @@ app = FastAPI(title="CM Media API")
  
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_credentials=False,
 )
  
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
 JWT_SECRET = os.getenv("JWT_SECRET", "cm_media_secret_2024")
-SCRIPT_URL = os.getenv("APPS_SCRIPT_URL", "")
  
-# ── Auth ──────────────────────────────────────────────────────────────────────
 def create_token(payload: dict) -> str:
     data = {**payload, "exp": datetime.utcnow() + timedelta(days=30)}
     return jwt.encode(data, JWT_SECRET, algorithm="HS256")
@@ -49,52 +47,30 @@ def get_sheets(user=Depends(get_current_user)) -> SheetsClient:
         raise HTTPException(status_code=400, detail="Chưa có sheet")
     return SheetsClient(sid)
  
-# ── Google OAuth ──────────────────────────────────────────────────────────────
-class GoogleAuthReq(BaseModel):
-    code: str
-    redirect_uri: str
- 
-@app.post("/auth/google")
-async def google_auth(req: GoogleAuthReq):
-    # Exchange code for tokens
+# ── Google One Tap OAuth ──────────────────────────────────────────────────────
+@app.post("/auth/google-onetap")
+async def google_onetap(request: Request):
+    body = await request.json()
+    credential = body.get("credential")
+    if not credential:
+        raise HTTPException(400, "Thiếu credential")
     async with httpx.AsyncClient() as client:
-        token_res = await client.post(
-            "https://oauth2.googleapis.com/token",
-            data={
-                "code": req.code,
-                "client_id": GOOGLE_CLIENT_ID,
-                "client_secret": GOOGLE_CLIENT_SECRET,
-                "redirect_uri": req.redirect_uri,
-                "grant_type": "authorization_code",
-            }
+        res = await client.get(
+            "https://oauth2.googleapis.com/tokeninfo",
+            params={"id_token": credential}
         )
-        tokens = token_res.json()
-        if "error" in tokens:
-            raise HTTPException(400, tokens["error"])
- 
-        # Get user info
-        user_res = await client.get(
-            "https://www.googleapis.com/oauth2/v2/userinfo",
-            headers={"Authorization": f"Bearer {tokens['access_token']}"}
-        )
-        user_info = user_res.json()
- 
-    email = user_info["email"]
-    name = user_info.get("name", email)
-    picture = user_info.get("picture", "")
- 
-    # Tạo hoặc lấy sheet của user
+        info = res.json()
+    if "error" in info or "email" not in info:
+        raise HTTPException(401, "Token Google không hợp lệ")
+    email = info["email"]
+    name = info.get("name", email)
+    picture = info.get("picture", "")
     sc = SheetsClient()
     sheet_id = sc.get_or_create_user_sheet(email, name)
- 
     payload = {
-        "sub": email,
-        "email": email,
-        "name": name,
-        "picture": picture,
-        "sheet_id": sheet_id,
-        "trial_days_left": 7,
-        "plan": "trial"
+        "sub": email, "email": email, "name": name,
+        "picture": picture, "sheet_id": sheet_id,
+        "trial_days_left": 7, "plan": "trial"
     }
     token = create_token(payload)
     return {"token": token, "user": payload}
@@ -106,10 +82,9 @@ async def me(user=Depends(get_current_user)):
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 @app.get("/dashboard")
 async def dashboard(sc: SheetsClient = Depends(get_sheets)):
-    from datetime import datetime as dt
     content = sc.get_all_content()
     pages = sc.get_all_pages()
-    now = dt.now()
+    now = datetime.now()
     stats = {"total": len(content), "success": 0, "posting": 0, "pending": 0, "failed": 0, "stuck": 0}
     for r in content:
         s = r.get("Trạng thái", "").lower()
@@ -120,18 +95,16 @@ async def dashboard(sc: SheetsClient = Depends(get_sheets)):
                 import re
                 parts = [int(x) for x in re.findall(r'\d+', str(r.get("Thời gian đăng","")))]
                 if len(parts) >= 6:
-                    d = dt(parts[2],parts[1],parts[0],parts[3],parts[4],parts[5])
+                    d = datetime(parts[2],parts[1],parts[0],parts[3],parts[4],parts[5])
                     if d < now: stats["stuck"] += 1; continue
             except: pass
             stats["pending"] += 1
         elif s in ("thất bại","lỗi"): stats["failed"] += 1
- 
     pages_out = []
     for p in pages:
         posted = sum(1 for r in content if r.get("tên trang")==p.get("Tên trang") and r.get("Trạng thái","").lower()=="thành công")
         pages_out.append({
-            "name": p.get("Tên trang",""),
-            "pid": p.get("ID",""),
+            "name": p.get("Tên trang",""), "pid": p.get("ID",""),
             "followers": 0, "fans": 0, "reach": 0, "impressions": 0,
             "posted": posted
         })
@@ -141,12 +114,17 @@ async def dashboard(sc: SheetsClient = Depends(get_sheets)):
 @app.get("/pages")
 async def list_pages(sc: SheetsClient = Depends(get_sheets)):
     rows = sc.get_all_pages_with_row()
-    return [{"_row": ri, "id": i, **{k:v for k,v in r.items()}} for i,(ri,r) in enumerate(rows)]
+    return [{"_row": ri, "id": i, **r} for i,(ri,r) in enumerate(rows)]
  
 class PageData(BaseModel):
-    name: str; pid: str = ""; token: str = ""; proxy: str = ""
-    channels: str = ""; stop_links: str = ""; clips: int = 5; end_time: str = ""
-    _row: Optional[int] = None
+    name: str = ""
+    pid: str = ""
+    token: str = ""
+    proxy: str = ""
+    channels: str = ""
+    stop_links: str = ""
+    clips: int = 5
+    end_time: str = ""
  
 @app.post("/pages")
 async def create_page(data: PageData, sc: SheetsClient = Depends(get_sheets)):
@@ -212,42 +190,7 @@ async def reset_content(req: ResetReq, sc: SheetsClient = Depends(get_sheets)):
     sc.reset_status(req.rows, req.new_status)
     return {"ok": True}
  
- 
-@app.post("/auth/google-onetap")
-async def google_onetap(request: Request):
-    body = await request.json()
-    credential = body.get("credential")
-    if not credential:
-        raise HTTPException(400, "Thiếu credential")
-    
-    # Verify Google One Tap token
-    import httpx
-    async with httpx.AsyncClient() as client:
-        res = await client.get(
-            "https://oauth2.googleapis.com/tokeninfo",
-            params={"id_token": credential}
-        )
-        info = res.json()
-    
-    if "error" in info:
-        raise HTTPException(401, "Token không hợp lệ")
-    
-    email = info.get("email")
-    name = info.get("name", email)
-    picture = info.get("picture", "")
-    
-    # Tạo hoặc lấy sheet
-    sc = SheetsClient()
-    sheet_id = sc.get_or_create_user_sheet(email, name)
-    
-    payload = {
-        "sub": email, "email": email, "name": name,
-        "picture": picture, "sheet_id": sheet_id,
-        "trial_days_left": 7, "plan": "trial"
-    }
-    token = create_token(payload)
-    return {"token": token, "user": payload}
- 
 @app.get("/ping")
 async def ping():
     return {"ok": True, "message": "CM Media API đang chạy!"}
+ 
